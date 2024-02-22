@@ -54,7 +54,7 @@ pipeline{
                 script{
                    withDockerRegistry(credentialsId: 'docker', toolName: 'docker'){   
                        sh "docker build --build-arg TMDB_V3_API_KEY=AJ7AYe14eca3e76864yah319b92 -t netflix ."
-                       sh "docker tag netflix sevenajay/netflix:latest "
+                       sh "docker tag netflix Pavanf5/netflix:latest "
                        sh "docker push Pavanf5/netflix:latest "
                     }
                 }
@@ -62,7 +62,7 @@ pipeline{
         }
         stage("TRIVY"){
             steps{
-                sh "trivy image sevenajay/netflix:latest > trivyimage.txt" 
+                sh "trivy image Pavanf5/netflix:latest > trivyimage.txt" 
             }
         }
         stage('Deploy to container'){
