@@ -4,6 +4,7 @@ stages:
     - trivy file scan
     - docker
     - trivy image scan
+    - run container
 
 Install dependency:
     stage: npm
@@ -45,7 +46,7 @@ Docker build and push:
   services:
     - docker:dind
   script:
-    - docker buildx –-build-arg REACT_APP_RAPID_API_KEY=a07dc9cac6msh9ed95f02ef95260p1c1576jsne8cac24f1161 -t youtubeclone .
+    - docker build --build-arg X_RAPIDAPI_KEY=a07dc9cac6msh9ed95f02ef95260p1c1576jsne8cac24f1161 -t youtubeclone .
     - docker tag youtubeclone pavankumarf5/youtubeclone:latest
     - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
     - docker push pavankumarf5/youtubeclone:latest
@@ -57,5 +58,12 @@ Scan image:
     entrypoint: [""]
   script:
     - trivy image pavankumarf5/youtubeclone:latest
+
+deploy:
+  stage: run container
+  tags:
+    - youtube
+  script:
+    - docker run -d --name youtube -p 3000:3000 pavankumarf5/youtubeclone:latest
 
 
