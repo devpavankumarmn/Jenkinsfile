@@ -109,3 +109,39 @@ Build-image-job:
     - echo $CI_GITLAB_TOKEN | docker login -u $CI_REGISTRY_USER $CI_REGISTRY --password-stdin
     - sudo docker build -t $CI_REGISTRY_IMAGE .
     - sudo docker push $CI_REGISTRY_IMAGE
+
+
+
+
+
+
+
+
+
+
+stages:
+  - setup
+  - build
+
+variables:
+  DOCKER_HOST: tcp://docker:2375/
+  DOCKER_DRIVER: overlay2
+
+before_script:
+  - apk update -qy
+  - apk install -y docker.io
+
+services:
+  - docker:dind
+
+install_dependencies:
+  stage: setup
+  script:
+    - docker --version
+
+build_image:
+  stage: build
+  script:
+    - echo $CI_GITLAB_TOKEN | docker login -u $CI_REGISTRY_USER $CI_REGISTRY --password-stdin
+    - sudo docker build -t $CI_REGISTRY_IMAGE .
+    - sudo docker push $CI_REGISTRY_IMAGE
