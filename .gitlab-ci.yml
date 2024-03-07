@@ -84,3 +84,28 @@ build_job:
     - docker build -t $CONTAINER_TEST_IMAGE .
     - docker push $CONTAINER_TEST_IMAGE
     - docker logout
+
+
+
+
+
+default:
+  image: docker:24.0.5
+  services:
+    - docker:24.0.5-dind
+  before_script:
+    - docker info
+
+
+stages:
+  - create-image
+
+Build-image-job:
+  stage: create-image
+  image: docker
+  services: 
+    - docker:dind
+  script:
+    - echo $CI_GITLAB_TOKEN | docker login -u $CI_REGISTRY_USER $CI_REGISTRY --password-stdin
+    - sudo docker build -t $CI_REGISTRY_IMAGE .
+    - sudo docker push $CI_REGISTRY_IMAGE
