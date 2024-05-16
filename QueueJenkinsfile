@@ -1,0 +1,69 @@
+pipeline {
+    agent any
+    
+    stages {
+        stage('Consume Files from RabbitMQ') {
+            steps {
+                script {
+                    def filesCount = sh(script: 'your-rabbitmq-count-files-command', returnStdout: true).trim().toInteger()
+                    echo "Number of files in RabbitMQ queue: ${filesCount}"
+                    if (filesCount >= 20) {
+                        startVMAndServices()
+                    } else {
+                        echo "Waiting for more files to accumulate in the queue..."
+                    }
+                }
+            }
+        }
+        
+        stage('Stop Services and VMs') {
+            when {
+                // This stage will only execute if the previous stage has been executed
+                expression {
+                    currentBuild.result == 'SUCCESS'
+                }
+            }
+            steps {
+                script {
+                    stopServicesAndVMs()
+                }
+            }
+        }
+    }
+    
+    post {
+        always {
+            // Clean up any resources if needed
+        }
+    }
+}
+
+def startVMAndServices() {
+    // Use appropriate Jenkins plugin or scripts to start cloud VMs
+    // For example, if using Amazon EC2 Plugin:
+    def instanceId = ec2.startInstances(instanceIds: 'your-instance-id')
+    if (instanceId) {
+        // If VM started successfully, start services
+        startServicesInVM()
+    }
+}
+
+def startServicesInVM() {
+    // Use SSH plugin or scripts to connect to the Linux server and start services
+    // For example, using SSH plugin:
+    sshagent(['your-ssh-credentials-id']) {
+        sh "ssh -i /path/to/private/key user@server 'sudo your-service-start-command'"
+    }
+}
+
+def stopServicesAndVMs() {
+    // Use SSH plugin or scripts to connect to the Linux server and stop services
+    // For example, using SSH plugin:
+    sshagent(['your-ssh-credentials-id']) {
+        sh "ssh -i /path/to/private/key user@server 'sudo your-service-stop-command'"
+    }
+    
+    // Use appropriate Jenkins plugin or scripts to stop cloud VMs
+    // For example, if using Amazon EC2 Plugin:
+    ec2.stopInstances(instanceIds: 'your-instance-id')
+}
